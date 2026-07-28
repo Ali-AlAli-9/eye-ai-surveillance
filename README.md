@@ -185,7 +185,7 @@ eye_ai/
 | Face Detection | MTCNN (min_face_size=40, confidence>0.9) |
 | Face Recognition | InceptionResnetV1 (vggface2 pretrained) |
 | Object Tracking | ByteTrack (YOLOv8 `model.track(persist=True)`) |
-| Database | PostgreSQL 18 (local) |
+| Database | PostgreSQL 18 (local) / Supabase (cloud) |
 | Cache | Django LocMemCache |
 | Channel Layer | Redis 5.0.9 (production) / InMemoryChannelLayer (dev) |
 | Frontend | Bootstrap 5.3.3 + Font Awesome 6.5.1 + Custom CSS |
@@ -282,7 +282,7 @@ LiveStreamConsumer._stream_reader() → WebSocket → Browser
 | `DB_NAME` | Yes | — | PostgreSQL database name |
 | `DB_USER` | Yes | — | PostgreSQL user |
 | `DB_PASSWORD` | Yes | — | PostgreSQL password |
-| `DB_HOST` | Yes | — | PostgreSQL host (`127.0.0.1` for local) |
+| `DB_HOST` | Yes | — | PostgreSQL host (`127.0.0.1` for local, or `db.xxxxx.supabase.co` for Supabase) |
 | `DB_PORT` | No | `5432` | PostgreSQL port |
 | `ALLOWED_HOSTS` | Yes | `127.0.0.1,localhost` | Comma-separated hostnames |
 | `CSRF_TRUSTED_ORIGINS` | Yes | `http://127.0.0.1:8000,http://localhost:8000` | Comma-separated origins |
@@ -304,6 +304,24 @@ Internet goes down →
   ✅ Engine keeps running (buffers in memory)
   ✅ When connection returns → resumes saving to DB
 ```
+
+### Supabase Support
+
+The system supports both local PostgreSQL and Supabase. To use Supabase:
+
+1. Go to [Supabase](https://supabase.com) → Create a project
+2. Go to **Settings** → **Database** → Copy the connection string
+3. Update `.env`:
+
+```env
+DB_NAME=postgres
+DB_USER=postgres.xxxxx
+DB_PASSWORD=your_password
+DB_HOST=db.xxxxx.supabase.co
+DB_PORT=5432
+```
+
+> `IS_LOCAL_DB` is auto-detected — no manual configuration needed.
 
 ## Management Commands
 

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h2><i class="fas fa-user-gear"></i> إدارة المستخدمين</h2>
+    <span class="page-header-badge">{{ users.paginator.count }} حساب</span>
+</div>
+
+{% if success %}
+<div class="alert-toast alert-toast-success">
+    <i class="fas fa-check-circle"></i> {{ success }}
+</div>
+{% endif %}
+{% if error %}
+<div class="alert-toast alert-toast-error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <span><i class="fas fa-user-plus me-2"></i>حساب جديد</span>
+            </div>
+            <div class="card-body-custom">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-user me-1"></i>اسم المستخدم</label>
+                        <input type="text" name="username" required class="form-input" placeholder="أدخل اسم المستخدم">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-lock me-1"></i>كلمة المرور</label>
+                        <input type="password" name="password" required minlength="8" class="form-input" placeholder="8 أحرف على الأقل">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-lock me-1"></i>تأكيد كلمة المرور</label>
+                        <input type="password" name="confirm_password" required minlength="8" class="form-input" placeholder="أعد إدخال كلمة المرور">
+                    </div>
+                    <button type="submit" class="btn-custom btn-custom-primary" style="width:100%;justify-content:center;margin-top:4px;">
+                        <i class="fas fa-plus"></i> إنشاء الحساب
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <span><i class="fas fa-users me-2"></i>الحسابات الحالية</span>
+            </div>
+            <div class="card-body-custom" style="padding:0;">
+                {% for u in users %}
+                <div class="user-card {% if u.is_superuser %}user-card-super{% elif u.is_staff %}user-card-staff{% endif %}">
+                    <div class="user-card-info">
+                        <div class="user-avatar {% if u.is_superuser %}avatar-super{% elif u.is_staff %}avatar-staff{% else %}avatar-user{% endif %}">
+                            {{ u.username|first|upper }}
+                        </div>
+                        <div class="user-card-details">
+                            <span class="user-card-name">{{ u.username }}</span>
+                            <span class="user-card-role">
+                                {% if u.is_superuser %}
+                                    <i class="fas fa-crown"></i> مدير عام
+                                {% elif u.is_staff %}
+                                    <i class="fas fa-shield-halved"></i> مشرف
+                                {% else %}
+                                    <i class="fas fa-user"></i> مستخدم
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="user-card-actions">
+                        {% if not u.is_superuser or user.is_superuser %}
+                        <form method="post" action="{% url 'reset_password' u.id %}" class="user-action-form">
+                            {% csrf_token %}
+                            <input type="password" name="new_password" placeholder="كلمة سر جديدة" required minlength="8"
+                                   class="action-input">
+                            <input type="password" name="confirm_new_password" placeholder="تأكيد" required minlength="8"
+                                   class="action-input action-input-sm">
+                            <button class="btn-custom btn-custom-outline btn-custom-sm" title="تغيير كلمة المرور">
+                                <i class="fas fa-key"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if not u.is_superuser or user.is_superuser %}
+                        <form method="post" action="{% url 'force_logout' u.id %}" class="user-action-form-inline">
+                            {% csrf_token %}
+                            <button class="btn-custom btn-custom-outline btn-custom-sm" title="قطع الجلسة"
+                                    onclick="return confirm('قطع جلسة {{ u.username|escapejs }}؟')">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if not u.is_superuser or user.is_superuser %}
+                        {% if u.id != user.id %}
+                        <form method="post" action="{% url 'delete_user' u.id %}" class="user-action-form-inline">
+                            {% csrf_token %}
+                            <button class="btn-action-danger" title="حذف الحساب"
+                                    onclick="return confirm('هل أنت متأكد من حذف {{ u.username|escapejs }}؟\nهذا الإجراء لا يمكن التراجع عنه.')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if users.has_other_pages %}
+                <div class="pagination-bar">
+                    {% if users.has_previous %}
+                    <a href="?page={{ users.previous_page_number }}" class="btn-custom btn-custom-outline btn-custom-sm">
+                        <i class="fas fa-chevron-right"></i> السابق
+                    </a>
+                    {% endif %}
+                    <span class="pagination-info">
+                        صفحة {{ users.number }} من {{ users.paginator.num_pages }}
+                    </span>
+                    {% if users.has_next %}
+                    <a href="?page={{ users.next_page_number }}" class="btn-custom btn-custom-outline btn-custom-sm">
+                        التالي <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

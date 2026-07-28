@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="refresh" content="10;url=/live/">
+    <title>Eye AI - تشغيل الكاميرا</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'surveillance/engine_loading.css' %}?v=1.0">
+</head>
+<body>
+    <div class="card">
+        <div class="brand">EYE AI</div>
+
+        <div class="spinner-wrap">
+            <div class="ring-outer"></div>
+            <div class="ring-inner"></div>
+            <div class="ring-dot"></div>
+        </div>
+
+        <div class="title" id="titleText">جاري تحميل النموذج</div>
+        <div class="subtitle">سيتم التوجيه تلقائياً إلى صفحة البث المباشر</div>
+
+        <div class="countdown" id="countdown">١٠</div>
+        <div class="countdown-label">ثانية</div>
+
+        <div class="bar-track"><div class="bar-fill"></div></div>
+    </div>
+
+    <script>
+        var arabicNums = ['١٠','٩','٨','٧','٦','٥','٤','٣','٢','١'];
+        var cd = document.getElementById('countdown');
+        var ti = document.getElementById('titleText');
+        var dots = ['', '.', '..', '...'];
+        var sec = 0;
+        var dotCount = 0;
+
+        setInterval(function() {
+            sec++;
+            if (sec < 10) {
+                cd.textContent = arabicNums[sec];
+            }
+        }, 1000);
+
+        setInterval(function() {
+            dotCount = (dotCount + 1) % 4;
+            ti.textContent = 'جاري تحميل النموذج' + dots[dotCount];
+        }, 500);
+    </script>
+</body>
+</html>

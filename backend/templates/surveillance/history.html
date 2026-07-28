@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-header">
+    <h2><i class="fas fa-clock-rotate-left"></i> سجل الاكتشافات</h2>
+    <div class="page-header-actions">
+        <span class="page-header-badge">{{ detections.paginator.count }} كشف</span>
+        {% if detections %}
+        <form method="post" action="{% url 'delete_history' %}"
+              onsubmit="return confirm('حذف كل الاكتشافات؟ لا يمكن التراجع!')" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="confirm_delete" value="DELETE_ALL">
+            <button class="btn-custom btn-custom-danger btn-custom-sm">
+                <i class="fas fa-trash-can"></i>
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom">
+        {% if detections %}
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>الصورة</th>
+                        <th>الصنف</th>
+                        <th>الثقة</th>
+                        <th>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in detections %}
+                    <tr>
+                        <td>
+                            {% if d.snapshot %}
+                            <img src="{{ d.snapshot.url }}" width="56" height="42"
+                                 style="border-radius:8px;object-fit:cover;cursor:pointer"
+                                 onclick="document.getElementById('modalImage').src='{{ d.snapshot.url|escapejs }}'; new bootstrap.Modal('#imageModal').show();">
+                            {% else %}—{% endif %}
+                        </td>
+                        <td><span class="badge bg-danger">{{ d.class_name }}</span></td>
+                        <td>{{ d.confidence|floatformat:2 }}</td>
+                        <td style="font-size:0.85rem;">{{ d.timestamp|date:"Y-m-d H:i:s" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if detections.has_other_pages %}
+        <nav class="pagination-bar" style="border-top:none;">
+          {% if detections.has_previous %}
+          <a href="?page={{ detections.previous_page_number }}{% if selected_class %}&class={{ selected_class|urlencode }}{% endif %}"
+             class="btn-custom btn-custom-outline btn-custom-sm">
+              <i class="fas fa-chevron-right"></i> السابق
+          </a>
+          {% endif %}
+          <span class="pagination-info">
+            صفحة {{ detections.number }} من {{ detections.paginator.num_pages }}
+          </span>
+          {% if detections.has_next %}
+          <a href="?page={{ detections.next_page_number }}{% if selected_class %}&class={{ selected_class|urlencode }}{% endif %}"
+             class="btn-custom btn-custom-outline btn-custom-sm">
+              التالي <i class="fas fa-chevron-left"></i>
+          </a>
+          {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-slash"></i>
+            <p>لا توجد اكتشافات بعد. شغّل AI Engine.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="imageModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center p-0">
+        <img id="modalImage" src="" class="img-fluid" style="border-radius:12px;">
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

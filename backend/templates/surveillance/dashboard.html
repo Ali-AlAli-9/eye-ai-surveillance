@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-header">
+    <h2><i class="fas fa-chart-simple"></i> لوحة التحكم</h2>
+</div>
+
+{% if is_staff %}
+<div class="engine-control-bar" id="engineControl" data-engine-start="{% url 'start_engine' %}" data-engine-stop="{% url 'stop_engine' %}" data-live-url="{% url 'live' %}">
+{% if engine_running %}
+    <form method="post" action="{% url 'stop_engine' %}" id="engineForm">
+        {% csrf_token %}
+        <button type="submit" class="btn-custom btn-custom-danger" id="engineBtn">
+            <i class="fas fa-stop"></i> إيقاف الكاميرا
+        </button>
+    </form>
+    <span class="engine-status engine-status-on" id="engineStatusBadge"><i class="fas fa-circle"></i> يعمل الآن</span>
+{% else %}
+    <form method="post" action="{% url 'start_engine' %}" id="engineForm">
+        {% csrf_token %}
+        <button type="submit" class="btn-custom btn-custom-success" id="engineBtn">
+            <i class="fas fa-play"></i> تشغيل الكاميرا
+        </button>
+    </form>
+    <span class="engine-status engine-status-off" id="engineStatusBadge"><i class="fas fa-circle"></i> متوقف</span>
+{% endif %}
+</div>
+{% endif %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon red"><i class="fas fa-user"></i></div>
+        <div class="stat-info">
+            <h3>{{ today_count }}</h3>
+            <p>شخص اليوم</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+            <h3>{{ last_detection.timestamp|date:"H:i"|default:"--" }}</h3>
+            <p>آخر كشف</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-video"></i></div>
+        <div class="stat-info">
+            <h3>{% if engine_running %}حية{% else %}متوقف{% endif %}</h3>
+            <p>حالة البث</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-bell"></i></div>
+        <div class="stat-info">
+            <h3>{{ unread_count }}</h3>
+            <p>تنبيهات غير مقروءة</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <span><i class="fas fa-video me-2"></i>البث المباشر</span>
+                <span class="badge-status {% if engine_running %}badge-status-online{% else %}badge-status-offline{% endif %}" id="streamStatus">
+                    {% if engine_running %}● متصل{% else %}● غير متصل{% endif %}
+                </span>
+            </div>
+            <div class="card-body-custom p-0">
+                <div class="stream-container">
+                    <img id="liveStream" src="" alt="Live Feed">
+                    <div class="stream-overlay">
+                        <span class="badge-custom"><i class="fas fa-user"></i> <span id="personCount">0</span></span>
+                        <span class="badge-custom"><i class="fas fa-clock"></i> <span id="streamTime">--:--:--</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <span><i class="fas fa-bell me-2"></i>آخر التنبيهات</span>
+                <a href="{% url 'alerts' %}" class="btn-custom btn-custom-outline btn-custom-sm">عرض الكل</a>
+            </div>
+            <div class="card-body-custom">
+                {% if alerts %}
+                {% for a in alerts %}
+                <div class="alert-item-custom {% if not a.is_read %}unread{% endif %}">
+                    <div>
+                        <span class="badge bg-{% if a.alert_type == 'person_stranger' %}danger{% elif a.alert_type == 'person_known' %}success{% elif a.alert_type == 'motion' %}warning{% elif a.alert_type == 'person' %}danger{% else %}info{% endif %} me-1">
+                            {{ a.get_alert_type_display }}
+                        </span>
+                        <small>{{ a.timestamp|date:"H:i" }}</small>
+                    </div>
+                    <small>{{ a.message|truncatechars:25 }}</small>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>لا توجد تنبيهات بعد</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'surveillance/js/live-stream.js' %}"></script>
+<script>
+(function() {
+    var form = document.getElementById("engineForm");
+    var btn = document.getElementById("engineBtn");
+    if (!form || !btn) return;
+    form.addEventListener("submit", function() {
+        btn.disabled = true;
+        var icon = btn.querySelector("i");
+        if (icon) { icon.className = "fas fa-spinner fa-spin"; }
+        var text = btn.childNodes;
+        for (var i = 0; i < text.length; i++) {
+            if (text[i].nodeType === 3) { text[i].textContent = " جارٍ التحميل..."; }
+        }
+    });
+})();
+</script>
+{% endblock %}

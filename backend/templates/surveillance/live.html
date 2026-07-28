@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-video"></i> البث المباشر</h2>
+    <div>
+        <span class="badge-status badge-status-connecting" id="streamStatus">● جارٍ الاتصال...</span>
+    </div>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom p-0">
+        <div class="stream-container" style="max-height:85vh;">
+            <img id="liveStream" src="" alt="Live Feed"
+                 style="max-height:85vh;object-fit:contain;display:none;">
+            <div id="streamPlaceholder" class="stream-placeholder">
+                <i class="fas fa-video" style="font-size:3.5rem;color:var(--text-muted);margin-bottom:16px;opacity:0.3;"></i>
+                <span style="color:var(--text-muted);font-size:0.95rem;">جارٍ الاتصال بالبث...</span>
+            </div>
+            <div class="stream-overlay">
+                <span class="badge-custom"><i class="fas fa-user"></i> <span id="personCount">0</span></span>
+                <span class="badge-custom"><i class="fas fa-clock"></i> <span id="streamTime">--:--:--</span></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'surveillance/js/live-stream.js' %}"></script>
+{% endblock %}

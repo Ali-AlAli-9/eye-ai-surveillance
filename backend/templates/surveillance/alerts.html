@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-header">
+    <h2><i class="fas fa-bell"></i> التنبيهات</h2>
+    <div class="page-header-actions">
+        <span class="page-header-badge">{{ alerts.paginator.count }} تنبيه</span>
+        <form method="post" action="{% url 'mark_all_read' %}">
+            {% csrf_token %}
+            <button class="btn-custom btn-custom-outline btn-custom-sm">
+                <i class="fas fa-check-double"></i> قراءة الكل
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom">
+        {% if alerts %}
+        {% for a in alerts %}
+        <div class="alert-item-custom {% if not a.is_read %}unread{% endif %}">
+            <div style="display:flex;align-items:center;gap:12px;">
+                {% if a.snapshot %}
+                <img src="{{ a.snapshot.url }}" width="48" height="36"
+                     style="border-radius:8px;object-fit:cover;cursor:pointer"
+                     onclick="document.getElementById('alertModalImage').src='{{ a.snapshot.url|escapejs }}'; new bootstrap.Modal('#alertImageModal').show();">
+                {% endif %}
+                <div>
+                    <span class="badge bg-{% if a.alert_type == 'person_stranger' %}danger{% elif a.alert_type == 'person_known' %}success{% elif a.alert_type == 'motion' %}warning{% elif a.alert_type == 'person' %}danger{% else %}info{% endif %}">
+                        {{ a.get_alert_type_display }}
+                    </span>
+                    <span style="font-size:0.9rem;margin-right:8px;">{{ a.message }}</span>
+                    <small class="d-block" style="font-size:0.75rem;margin-top:3px;color:var(--text-muted);">{{ a.timestamp|date:"Y-m-d H:i:s" }}</small>
+                </div>
+            </div>
+            <div>
+                {% if not a.is_read %}
+                <form method="post" action="{% url 'mark_read' a.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="btn-custom btn-custom-primary btn-custom-sm">
+                        <i class="fas fa-check"></i> قرأت
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% if alerts.has_other_pages %}
+        <nav class="pagination-bar" style="border-top:none;">
+            {% if alerts.has_previous %}
+            <a href="?page={{ alerts.previous_page_number }}" class="btn-custom btn-custom-outline btn-custom-sm">
+                <i class="fas fa-chevron-right"></i> السابق
+            </a>
+            {% endif %}
+            <span class="pagination-info">
+                صفحة {{ alerts.number }} من {{ alerts.paginator.num_pages }}
+            </span>
+            {% if alerts.has_next %}
+            <a href="?page={{ alerts.next_page_number }}" class="btn-custom btn-custom-outline btn-custom-sm">
+                التالي <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-bell-slash"></i>
+            <p>لا توجد تنبيهات بعد</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="alertImageModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center p-0">
+        <img id="alertModalImage" src="" class="img-fluid" style="border-radius:12px;">
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+setInterval(function() { location.reload(); }, 30000);
+</script>
+{% endblock %}
